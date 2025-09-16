@@ -23,10 +23,10 @@ const App = () => {
           path: "/dashboard",
           element: <Dashboard />,
         },
-        {
-          path: "/:id",
+         {
+           path: "/:id",
           element: <Redirect />,
-        },
+         },
         {
           path:"/Links/:id",
           element:<Links/>
