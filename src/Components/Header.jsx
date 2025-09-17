@@ -9,7 +9,7 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-  } from "@/components/ui/dropdown-menu"
+  } from "@/Components/ui/dropdown-menu"
 import { LogOut, User } from 'lucide-react'
 const Header = () => {
   const { user, signOut } = useAuth();

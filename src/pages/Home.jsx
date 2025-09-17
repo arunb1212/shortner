@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/Components/ui/button";
 import Accrodian from "@/Components/Accrodian";
 import { useNavigate } from "react-router-dom";
 

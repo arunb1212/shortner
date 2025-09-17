@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs"
 import Loginform from '@/Components/ui/loginform'
 import Signupform from '@/Components/ui/signupform'
 import { useAuth } from '@/contexts/AuthContext'
