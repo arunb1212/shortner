@@ -13,7 +13,7 @@ import { Button } from "./button";
 import { BeatLoader } from "react-spinners";
 import Errors from "../Errors";
 // import { validators } from "tailwind-merge";
-const Loginform = () => {
+const Loginform = ({ onSubmit, loading: externalLoading }) => {
   const [formData, setFormData] = useState({
     Email: "",
     Password: "",
@@ -29,29 +29,33 @@ const Loginform = () => {
   };
 
 
-  const handleLogin= async()=>{
-     SetError([])
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    SetError({});
 
-     try {
-      const scheme=Yup.object().shape({
-        Email:Yup.string()
-        .email("Enter valid Email")
-        .required("Email is Required"),
-        Password:Yup.string()
-        .min(6,"Password must be 6 charecter")
-        .required("password is required")
+    try {
+      const scheme = Yup.object().shape({
+        Email: Yup.string()
+          .email("Enter valid Email")
+          .required("Email is Required"),
+        Password: Yup.string()
+          .min(6, "Password must be 6 characters")
+          .required("Password is required")
+      });
 
-        
-      })
+      await scheme.validate(formData, { abortEarly: false });
 
-      await scheme.validate(formData,{abortEarly:false})
-     } catch (e) {
+      // Call the onSubmit function passed from parent
+      if (onSubmit) {
+        await onSubmit(formData);
+      }
+    } catch (e) {
       const newErrors = {};
       e?.inner?.forEach((err) => {
-      newErrors [err.path] = err.message;
+        newErrors[err.path] = err.message;
       });
-      SetError (newErrors);
-     }
+      SetError(newErrors);
+    }
   }
   console.log(formData);
   return (
@@ -63,11 +67,11 @@ const Loginform = () => {
       </CardHeader>
       <CardContent className="w-full">
         <input
-          className="w-full outline-none border h-[30px] rounded-[5px] px-[10px] border-white "
+          className="w-full outline-none border h-[40px] rounded-lg px-4 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           type="email"
           name="Email"
           onChange={handleChange}
-          placeholder="Enter Your email Id"
+          placeholder="Enter your email"
           required
         />
         {/* <Error message={"Some message"}/> */}
@@ -75,19 +79,19 @@ const Loginform = () => {
       </CardContent>
       <CardContent className="w-full">
         <input
-          className="w-full outline-none border h-[30px] rounded-[5px] px-[10px] border-white "
+          className="w-full outline-none border h-[40px] rounded-lg px-4 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           type="password"
           name="Password"
           onChange={handleChange}
-          placeholder="Enter Your Password"
+          placeholder="Enter your password"
           required
         />
         {/* <Error message={"Some Message"}/> */}
         {Error.Password && <Errors message={Error.Password}/>}
       </CardContent>
       <CardFooter>
-        <Button onClick={handleLogin}>
-          {"Login"}
+        <Button onClick={handleLogin} disabled={externalLoading} className="w-full">
+          {externalLoading ? <BeatLoader size={10} color="#ffffff" /> : "Login"}
         </Button>
       </CardFooter>
     </Card>

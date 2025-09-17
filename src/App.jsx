@@ -1,5 +1,7 @@
 import React from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { AuthProvider } from "./contexts/AuthContext";
+import ProtectedRoute from "./Components/ProtectedRoute";
 import App_layout from "./layout/App_layout";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
@@ -21,27 +23,48 @@ const App = () => {
         },
         {
           path: "/dashboard",
-          element: <Dashboard />,
+          element: (
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          ),
         },
-         {
-           path: "/:id",
-          element: <Redirect />,
-         },
         {
-          path:"/Links/:id",
-          element:<Links/>
+          path: "/Links",
+          element: (
+            <ProtectedRoute>
+              <Links />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/Links/:createUrl",
+          element: (
+            <ProtectedRoute>
+              <Links />
+            </ProtectedRoute>
+          ),
         },
         {
           path:"*",
-          element:<h1>wrong</h1>
+          element:<h1>Page not found</h1>
         }
       ],
     },
+    // Redirect route outside of layout
+    {
+      path: "/r/:shortCode",
+      element: <Redirect />,
+    },
   ]);
 
-  return <div className="">{
-    <RouterProvider router={router}/>
-  }</div>;
+  return (
+    <AuthProvider>
+      <div className="">
+        <RouterProvider router={router}/>
+      </div>
+    </AuthProvider>
+  );
 };
 
 export default App;
