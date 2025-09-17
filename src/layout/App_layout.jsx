@@ -1,7 +1,7 @@
 import React from 'react'
 import { Outlet } from 'react-router-dom'
 import Header from '@/Components/Header'
-import Landing from '@/Components/landing'
+import Landing from '@/Components/Landing'
 const App_layout = () => {
   return (
     <div >
