@@ -8,20 +8,15 @@ CREATE TABLE IF NOT EXISTS urls (
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE
 );
 
--- Create an index on short_code for faster lookups
 CREATE INDEX IF NOT EXISTS idx_urls_short_code ON urls(short_code);
 
--- Create an index on created_at for sorting
 CREATE INDEX IF NOT EXISTS idx_urls_created_at ON urls(created_at DESC);
 
--- Enable Row Level Security (RLS)
 ALTER TABLE urls ENABLE ROW LEVEL SECURITY;
 
--- Create a policy that allows anyone to read URLs (for redirects)
 CREATE POLICY "Allow public read access" ON urls
   FOR SELECT USING (true);
 
--- Create a policy that allows authenticated users to insert URLs
 CREATE POLICY "Allow authenticated users to insert" ON urls
   FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 

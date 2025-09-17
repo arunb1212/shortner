@@ -25,15 +25,7 @@ This is a comprehensive URL shortener application built with React, Supabase, an
 npm install
 ```
 
-### 2. Supabase Setup
-
-1. Create a new project at [supabase.com](https://supabase.com)
-2. Go to Settings > API to get your project URL and anon key
-3. Create a `.env.local` file in the root directory:
-
-```env
-VITE_SUPABASE_URL=your_supabase_project_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+BASE_ANON_KEY=your_supabase_anon_key
 ```
 
 ### 3. Database Schema
