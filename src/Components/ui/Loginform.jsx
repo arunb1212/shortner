@@ -7,7 +7,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/Components/ui/card";
 import * as Yup from "yup"
 import { Button } from "./button";
 import { BeatLoader } from "react-spinners";
