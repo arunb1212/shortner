@@ -1,21 +1,24 @@
 import React from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
-import ProtectedRoute from "./Components/ProtectedRoute";
 import App_layout from "./layout/App_layout";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
-import Home from "./pages/Home";
+import UrlShortener from "./Components/UrlShortener";
 import Redirect from "./pages/Redirect";
-import Links from "./pages/Links";
+
 const App = () => {
   const router = createBrowserRouter([
+    {
+      path: "/r/:shortCode",
+      element: <Redirect />,
+    },
     {
       element: <App_layout />,
       children: [
         {
           path: "/",
-          element: <Home />,
+          element: <Dashboard />,
         },
         {
           path: "/login",
@@ -23,38 +26,17 @@ const App = () => {
         },
         {
           path: "/dashboard",
-          element: (
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          ),
+          element: <Dashboard />,
         },
         {
-          path: "/Links",
-          element: (
-            <ProtectedRoute>
-              <Links />
-            </ProtectedRoute>
-          ),
+          path: "/create-link",
+          element: <UrlShortener />,
         },
         {
-          path: "/Links/:createUrl",
-          element: (
-            <ProtectedRoute>
-              <Links />
-            </ProtectedRoute>
-          ),
-        },
-        {
-          path:"*",
-          element:<h1>Page not found</h1>
+          path: "*",
+          element: <Dashboard />,
         }
       ],
-    },
-    // Redirect route outside of layout
-    {
-      path: "/r/:shortCode",
-      element: <Redirect />,
     },
   ]);
 

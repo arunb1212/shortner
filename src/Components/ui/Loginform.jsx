@@ -1,24 +1,15 @@
 import React, { useState } from "react";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/Components/ui/card";
-import * as Yup from "yup"
+import * as Yup from "yup";
 import { Button } from "./button";
 import { BeatLoader } from "react-spinners";
 import Errors from "../Errors";
-// import { validators } from "tailwind-merge";
+
 const Loginform = ({ onSubmit, loading: externalLoading }) => {
   const [formData, setFormData] = useState({
     Email: "",
     Password: "",
   });
-  const [Error,SetError]=useState({})
+  const [Error, SetError] = useState({});
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -28,7 +19,6 @@ const Loginform = ({ onSubmit, loading: externalLoading }) => {
     }));
   };
 
-
   const handleLogin = async (e) => {
     e.preventDefault();
     SetError({});
@@ -36,16 +26,15 @@ const Loginform = ({ onSubmit, loading: externalLoading }) => {
     try {
       const scheme = Yup.object().shape({
         Email: Yup.string()
-          .email("Enter valid Email")
-          .required("Email is Required"),
+          .email("Enter a valid email address")
+          .required("Email is required"),
         Password: Yup.string()
-          .min(6, "Password must be 6 characters")
+          .min(6, "Password must be at least 6 characters")
           .required("Password is required")
       });
 
       await scheme.validate(formData, { abortEarly: false });
 
-      // Call the onSubmit function passed from parent
       if (onSubmit) {
         await onSubmit(formData);
       }
@@ -56,45 +45,52 @@ const Loginform = ({ onSubmit, loading: externalLoading }) => {
       });
       SetError(newErrors);
     }
-  }
-  console.log(formData);
+  };
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Login</CardTitle>
-        <CardDescription>Login If you have one</CardDescription>
-        {/* <CardAction>Card Action</CardAction> */}
-      </CardHeader>
-      <CardContent className="w-full">
+    <form onSubmit={handleLogin} className="space-y-4">
+      {/* Email Input */}
+      <div className="space-y-1.5">
+        <label className="text-xs font-bold text-zinc-700">Email Address</label>
         <input
-          className="w-full outline-none border h-[40px] rounded-lg px-4 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full outline-none border h-[42px] bg-zinc-50 border-zinc-200 rounded-xl px-4 text-xs font-semibold placeholder-zinc-400 focus:bg-white focus:border-zinc-950 focus:ring-2 focus:ring-zinc-950/10 transition-all"
           type="email"
           name="Email"
           onChange={handleChange}
-          placeholder="Enter your email"
+          placeholder="name@company.com"
           required
         />
-        {/* <Error message={"Some message"}/> */}
-        {Error.Email && <Errors message={Error.Email}/>}
-      </CardContent>
-      <CardContent className="w-full">
+        {Error.Email && <Errors message={Error.Email} />}
+      </div>
+
+      {/* Password Input */}
+      <div className="space-y-1.5">
+        <div className="flex justify-between items-center">
+          <label className="text-xs font-bold text-zinc-700">Password</label>
+          <a href="#" className="text-[10px] font-bold text-zinc-500 hover:text-zinc-950 transition-colors">
+            Forgot password?
+          </a>
+        </div>
         <input
-          className="w-full outline-none border h-[40px] rounded-lg px-4 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full outline-none border h-[42px] bg-zinc-50 border-zinc-200 rounded-xl px-4 text-xs font-semibold placeholder-zinc-400 focus:bg-white focus:border-zinc-950 focus:ring-2 focus:ring-zinc-950/10 transition-all"
           type="password"
           name="Password"
           onChange={handleChange}
-          placeholder="Enter your password"
+          placeholder="••••••••"
           required
         />
-        {/* <Error message={"Some Message"}/> */}
-        {Error.Password && <Errors message={Error.Password}/>}
-      </CardContent>
-      <CardFooter>
-        <Button onClick={handleLogin} disabled={externalLoading} className="w-full">
-          {externalLoading ? <BeatLoader size={10} color="#ffffff" /> : "Login"}
-        </Button>
-      </CardFooter>
-    </Card>
+        {Error.Password && <Errors message={Error.Password} />}
+      </div>
+
+      {/* Submit Button */}
+      <button
+        type="submit"
+        disabled={externalLoading}
+        className="w-full h-[42px] mt-2 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl text-xs font-bold flex items-center justify-center transition-all disabled:opacity-50 shadow-premium"
+      >
+        {externalLoading ? <BeatLoader size={8} color="#ffffff" /> : "Sign In"}
+      </button>
+    </form>
   );
 };
 

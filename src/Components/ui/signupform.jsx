@@ -1,13 +1,4 @@
 import React, { useState } from "react";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/Components/ui/card";
 import * as Yup from "yup";
 import { Button } from "./button";
 import { BeatLoader } from "react-spinners";
@@ -36,10 +27,10 @@ const Signupform = ({ onSubmit, loading }) => {
     try {
       const scheme = Yup.object().shape({
         Email: Yup.string()
-          .email("Enter valid Email")
-          .required("Email is Required"),
+          .email("Enter a valid email address")
+          .required("Email is required"),
         Password: Yup.string()
-          .min(6, "Password must be 6 characters")
+          .min(6, "Password must be at least 6 characters")
           .required("Password is required"),
         ConfirmPassword: Yup.string()
           .oneOf([Yup.ref('Password'), null], 'Passwords must match')
@@ -48,7 +39,6 @@ const Signupform = ({ onSubmit, loading }) => {
 
       await scheme.validate(formData, { abortEarly: false });
 
-      // Call the onSubmit function passed from parent
       if (onSubmit) {
         await onSubmit(formData);
       }
@@ -62,55 +52,58 @@ const Signupform = ({ onSubmit, loading }) => {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Sign Up</CardTitle>
-        <CardDescription>Create your account to get started</CardDescription>
-      </CardHeader>
-      <CardContent className="w-full space-y-4">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <input
-              className="w-full outline-none border h-[40px] rounded-lg px-4 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              type="email"
-              name="Email"
-              onChange={handleChange}
-              placeholder="Enter your email"
-              required
-            />
-            {Error.Email && <Errors message={Error.Email} />}
-          </div>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Email Input */}
+      <div className="space-y-1.5">
+        <label className="text-xs font-bold text-zinc-700">Email Address</label>
+        <input
+          className="w-full outline-none border h-[42px] bg-zinc-50 border-zinc-200 rounded-xl px-4 text-xs font-semibold placeholder-zinc-400 focus:bg-white focus:border-zinc-950 focus:ring-2 focus:ring-zinc-950/10 transition-all"
+          type="email"
+          name="Email"
+          onChange={handleChange}
+          placeholder="name@company.com"
+          required
+        />
+        {Error.Email && <Errors message={Error.Email} />}
+      </div>
 
-          <div>
-            <input
-              className="w-full outline-none border h-[40px] rounded-lg px-4 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              type="password"
-              name="Password"
-              onChange={handleChange}
-              placeholder="Enter your password"
-              required
-            />
-            {Error.Password && <Errors message={Error.Password} />}
-          </div>
+      {/* Password Input */}
+      <div className="space-y-1.5">
+        <label className="text-xs font-bold text-zinc-700">Password</label>
+        <input
+          className="w-full outline-none border h-[42px] bg-zinc-50 border-zinc-200 rounded-xl px-4 text-xs font-semibold placeholder-zinc-400 focus:bg-white focus:border-zinc-950 focus:ring-2 focus:ring-zinc-950/10 transition-all"
+          type="password"
+          name="Password"
+          onChange={handleChange}
+          placeholder="••••••••"
+          required
+        />
+        {Error.Password && <Errors message={Error.Password} />}
+      </div>
 
-          <div>
-            <input
-              className="w-full outline-none border h-[40px] rounded-lg px-4 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              type="password"
-              name="ConfirmPassword"
-              onChange={handleChange}
-              placeholder="Confirm your password"
-              required
-            />
-            {Error.ConfirmPassword && <Errors message={Error.ConfirmPassword} />}
-          </div>
+      {/* Confirm Password Input */}
+      <div className="space-y-1.5">
+        <label className="text-xs font-bold text-zinc-700">Confirm Password</label>
+        <input
+          className="w-full outline-none border h-[42px] bg-zinc-50 border-zinc-200 rounded-xl px-4 text-xs font-semibold placeholder-zinc-400 focus:bg-white focus:border-zinc-950 focus:ring-2 focus:ring-zinc-950/10 transition-all"
+          type="password"
+          name="ConfirmPassword"
+          onChange={handleChange}
+          placeholder="••••••••"
+          required
+        />
+        {Error.ConfirmPassword && <Errors message={Error.ConfirmPassword} />}
+      </div>
 
-          <Button type="submit" disabled={loading} className="w-full">
-            {loading ? <BeatLoader size={10} color="#ffffff" /> : "Sign Up"}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+      {/* Submit Button */}
+      <button
+        type="submit"
+        disabled={loading}
+        className="w-full h-[42px] mt-2 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl text-xs font-bold flex items-center justify-center transition-all disabled:opacity-50 shadow-premium"
+      >
+        {loading ? <BeatLoader size={8} color="#ffffff" /> : "Create Account"}
+      </button>
+    </form>
   );
 };
 
