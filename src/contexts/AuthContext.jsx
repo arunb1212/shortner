@@ -1,7 +1,17 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import supabase from '@/db/supabase';
+import api from '@/lib/api';
 
 const AuthContext = createContext({});
+
+// Decode JWT payload (no library needed)
+const decodeToken = (token) => {
+  try {
+    const payload = token.split('.')[1];
+    return JSON.parse(atob(payload));
+  } catch {
+    return null;
+  }
+};
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -15,39 +25,27 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // On mount, restore session from localStorage
   useEffect(() => {
-    // Get initial session
-    const getInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
-      setLoading(false);
-    };
-
-    getInitialSession();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setUser(session?.user ?? null);
-        setLoading(false);
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      const decoded = decodeToken(token);
+      // Check token hasn't expired
+      if (decoded && decoded.exp * 1000 > Date.now()) {
+        setUser({ id: decoded.id, email: decoded.email });
+      } else {
+        localStorage.removeItem('auth_token');
       }
-    );
-
-    return () => subscription.unsubscribe();
+    }
+    setLoading(false);
   }, []);
 
   // Sign up function
   const signUp = async (email, password) => {
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: undefined, // Disable email verification
-        }
-      });
-      
-      if (error) throw error;
+      const data = await api.post('/api/auth/signup', { email, password });
+      localStorage.setItem('auth_token', data.token);
+      setUser(data.user);
       return { data, error: null };
     } catch (error) {
       return { data: null, error };
@@ -57,12 +55,9 @@ export const AuthProvider = ({ children }) => {
   // Sign in function
   const signIn = async (email, password) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      
-      if (error) throw error;
+      const data = await api.post('/api/auth/login', { email, password });
+      localStorage.setItem('auth_token', data.token);
+      setUser(data.user);
       return { data, error: null };
     } catch (error) {
       return { data: null, error };
@@ -71,26 +66,8 @@ export const AuthProvider = ({ children }) => {
 
   // Sign out function
   const signOut = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
-  };
-
-  // Reset password function
-  const resetPassword = async (email) => {
-    try {
-      const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-      
-      if (error) throw error;
-      return { data, error: null };
-    } catch (error) {
-      return { data: null, error };
-    }
+    localStorage.removeItem('auth_token');
+    setUser(null);
   };
 
   const value = {
@@ -99,7 +76,6 @@ export const AuthProvider = ({ children }) => {
     signUp,
     signIn,
     signOut,
-    resetPassword,
   };
 
   return (

@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import QRCode from 'react-qr-code';
-import supabase from '@/db/supabase';
+import api from '@/lib/api';
 import { Copy, ExternalLink, Calendar, BarChart3 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -27,26 +27,6 @@ const UrlShortener = () => {
     }
   }, [searchParams]);
 
-  // Generate a random short code
-  const generateShortCode = () => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let result = '';
-    for (let i = 0; i < 6; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
-  };
-
-  // Validate URL
-  const isValidUrl = (string) => {
-    try {
-      new URL(string);
-      return true;
-    } catch (_) {
-      return false;
-    }
-  };
-
   // Shorten URL
   const handleShortenUrl = async (e) => {
     e.preventDefault();
@@ -55,65 +35,21 @@ const UrlShortener = () => {
     setLoading(true);
 
     try {
-      // Validate URL
-      if (!longUrl.trim()) {
-        throw new Error('Please enter a URL');
-      }
+      const data = await api.post('/api/urls', {
+        longUrl: longUrl.trim(),
+        customAlias: customAlias.trim() || undefined,
+      });
 
-      if (!isValidUrl(longUrl)) {
-        throw new Error('Please enter a valid URL');
-      }
-
-      // Generate short code
-      const shortCode = customAlias.trim() || generateShortCode();
-      
-      // Check if custom alias already exists
-      if (customAlias.trim()) {
-        const { data: existingUrl } = await supabase
-          .from('urls')
-          .select('*')
-          .eq('short_code', shortCode)
-          .single();
-
-        if (existingUrl) {
-          throw new Error('This custom alias is already taken');
-        }
-      }
-
-      // Save to database
-      const urlData = {
-        long_url: longUrl,
-        short_code: shortCode,
-        created_at: new Date().toISOString(),
-        clicks: 0
-      };
-
-      // Add user_id (always logged in now)
-      urlData.user_id = user.id;
-
-      const { data, error: dbError } = await supabase
-        .from('urls')
-        .insert([urlData])
-        .select()
-        .single();
-
-      if (dbError) {
-        throw new Error(dbError.message);
-      }
-
-      // Generate short URL
       const baseUrl = window.location.origin;
-      const generatedShortUrl = `${baseUrl}/r/${shortCode}`;
-      
+      const generatedShortUrl = `${baseUrl}/r/${data.shortCode}`;
+
       setShortUrl(generatedShortUrl);
       setQrCodeData(generatedShortUrl);
       setUrlData(data);
       setSuccess('URL shortened successfully!');
-      
-      // Clear form
+
       setLongUrl('');
       setCustomAlias('');
-
     } catch (err) {
       setError(err.message);
     } finally {
@@ -139,19 +75,19 @@ const UrlShortener = () => {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     const img = new Image();
-    
+
     img.onload = () => {
       canvas.width = img.width;
       canvas.height = img.height;
       ctx.drawImage(img, 0, 0);
-      
+
       const pngFile = canvas.toDataURL('image/png');
       const downloadLink = document.createElement('a');
-      downloadLink.download = `qr-code-${urlData?.short_code}.png`;
+      downloadLink.download = `qr-code-${urlData?.shortCode}.png`;
       downloadLink.href = pngFile;
       downloadLink.click();
     };
-    
+
     img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
   };
 
@@ -180,7 +116,7 @@ const UrlShortener = () => {
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium mb-2">
                 Custom Alias (Optional)
@@ -197,8 +133,8 @@ const UrlShortener = () => {
               </p>
             </div>
 
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={loading}
               className="w-full"
             >
@@ -212,7 +148,7 @@ const UrlShortener = () => {
               {error}
             </div>
           )}
-          
+
           {success && (
             <div className="mt-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
               {success}
@@ -233,20 +169,20 @@ const UrlShortener = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="p-3 bg-gray-50 rounded-lg border">
-                <p className="text-sm text-gray-600 mb-1">Your short URL:</p>
-                <p className="font-mono text-lg break-all">{shortUrl}</p>
+              <div className="p-3 bg-zinc-900 border border-zinc-800 rounded-lg">
+                <p className="text-sm text-gray-400 mb-1">Your short URL:</p>
+                <p className="font-mono text-lg text-white break-all">{shortUrl}</p>
               </div>
-              
+
               <div className="flex gap-2">
-                <Button 
+                <Button
                   onClick={() => copyToClipboard(shortUrl)}
                   className="flex-1"
                 >
                   <Copy className="w-4 h-4 mr-2" />
                   Copy URL
                 </Button>
-                <Button 
+                <Button
                   onClick={() => window.open(shortUrl, '_blank')}
                   variant="outline"
                 >
@@ -259,7 +195,7 @@ const UrlShortener = () => {
                 <div className="space-y-2 text-sm">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
-                    <span>Created: {new Date(urlData.created_at).toLocaleDateString()}</span>
+                    <span>Created: {new Date(urlData.createdAt).toLocaleDateString()}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <BarChart3 className="w-4 h-4" />
@@ -284,8 +220,8 @@ const UrlShortener = () => {
                   style={{ height: "auto", maxWidth: "100%", width: "100%" }}
                 />
               </div>
-              
-              <Button 
+
+              <Button
                 onClick={downloadQRCode}
                 className="w-full"
                 variant="outline"

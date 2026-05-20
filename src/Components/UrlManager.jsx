@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Copy, ExternalLink, Trash2, BarChart3, Calendar, QrCode } from 'lucide-react';
 import QRCode from 'react-qr-code';
-import supabase from '@/db/supabase';
+import api from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 
 const UrlManager = () => {
@@ -17,13 +17,7 @@ const UrlManager = () => {
   // Fetch user-specific URLs
   const fetchUrls = async () => {
     try {
-      const { data, error } = await supabase
-        .from('urls')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
+      const data = await api.get('/api/urls');
       setUrls(data || []);
     } catch (err) {
       setError('Failed to fetch URLs');
@@ -33,7 +27,9 @@ const UrlManager = () => {
   };
 
   useEffect(() => {
-    fetchUrls();
+    if (user) {
+      fetchUrls();
+    }
   }, [user]);
 
   // Delete URL
@@ -41,14 +37,8 @@ const UrlManager = () => {
     if (!confirm('Are you sure you want to delete this URL?')) return;
 
     try {
-      const { error } = await supabase
-        .from('urls')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
-      setUrls(urls.filter(url => url.id !== id));
+      await api.delete(`/api/urls/${id}`);
+      setUrls(urls.filter(url => url._id !== id));
       setSuccess('URL deleted successfully');
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
@@ -132,24 +122,24 @@ const UrlManager = () => {
       ) : (
         <div className="grid gap-4">
           {urls.map((url) => {
-            const shortUrl = `${window.location.origin}/r/${url.short_code}`;
+            const shortUrl = `${window.location.origin}/r/${url.shortCode}`;
             
             return (
-              <Card key={url.id}>
+              <Card key={url._id}>
                 <CardHeader>
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <CardTitle className="text-lg mb-2">
-                        {url.short_code}
+                        {url.shortCode}
                       </CardTitle>
                       <p className="text-sm text-gray-600 break-all">
-                        {url.long_url}
+                        {url.longUrl}
                       </p>
                     </div>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => deleteUrl(url.id)}
+                      onClick={() => deleteUrl(url._id)}
                       className="text-red-600 hover:text-red-700"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -159,9 +149,9 @@ const UrlManager = () => {
                 <CardContent>
                   <div className="space-y-4">
                     {/* Short URL */}
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <p className="text-sm text-gray-600 mb-1">Short URL:</p>
-                      <p className="font-mono text-sm break-all">{shortUrl}</p>
+                    <div className="p-3 bg-zinc-900 border border-zinc-800 rounded-lg">
+                      <p className="text-sm text-gray-400 mb-1">Short URL:</p>
+                      <p className="font-mono text-sm text-white break-all">{shortUrl}</p>
                     </div>
 
                     {/* Stats */}
@@ -172,7 +162,7 @@ const UrlManager = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4" />
-                        <span>{new Date(url.created_at).toLocaleDateString()}</span>
+                        <span>{new Date(url.createdAt).toLocaleDateString()}</span>
                       </div>
                     </div>
 
@@ -197,7 +187,7 @@ const UrlManager = () => {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => setShowQRCode(showQRCode === url.id ? null : url.id)}
+                        onClick={() => setShowQRCode(showQRCode === url._id ? null : url._id)}
                       >
                         <QrCode className="w-4 h-4 mr-2" />
                         QR
@@ -205,11 +195,11 @@ const UrlManager = () => {
                     </div>
 
                     {/* QR Code */}
-                    {showQRCode === url.id && (
+                    {showQRCode === url._id && (
                       <div className="mt-4 p-4 bg-white rounded-lg border">
                         <div className="flex justify-center mb-4">
                           <QRCode
-                            id={`qr-code-${url.short_code}`}
+                            id={`qr-code-${url.shortCode}`}
                             value={shortUrl}
                             size={150}
                           />
@@ -217,7 +207,7 @@ const UrlManager = () => {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => downloadQRCode(shortUrl, url.short_code)}
+                          onClick={() => downloadQRCode(shortUrl, url.shortCode)}
                           className="w-full"
                         >
                           Download QR Code

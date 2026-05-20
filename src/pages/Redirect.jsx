@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import supabase from '@/db/supabase';
 import { Loader2 } from 'lucide-react';
 
 const Redirect = () => {
@@ -11,27 +10,20 @@ const Redirect = () => {
   useEffect(() => {
     const redirectToUrl = async () => {
       try {
-        // Get URL from database
-        const { data, error: dbError } = await supabase
-          .from('urls')
-          .select('long_url, clicks')
-          .eq('short_code', shortCode)
-          .single();
+        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        
+        // Fetch original URL and increment click count in one request
+        const res = await fetch(`${baseUrl}/api/urls/r/${shortCode}`);
+        const data = await res.json();
 
-        if (dbError || !data) {
-          setError('Short URL not found');
+        if (!res.ok) {
+          setError(data.error || 'Short URL not found');
           setLoading(false);
           return;
         }
 
-        // Update click count
-        await supabase
-          .from('urls')
-          .update({ clicks: data.clicks + 1 })
-          .eq('short_code', shortCode);
-
         // Redirect to original URL
-        window.location.href = data.long_url;
+        window.location.href = data.longUrl;
 
       } catch (err) {
         setError('An error occurred while redirecting');
