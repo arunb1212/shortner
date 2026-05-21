@@ -1,4 +1,18 @@
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const getBaseUrl = () => {
+  let url = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  url = url.trim();
+  
+  // If the user forgot to add http:// or https://, prepend it automatically
+  if (!/^https?:\/\//i.test(url)) {
+    const isLocal = url.includes('localhost') || url.includes('127.0.0.1') || url.startsWith('192.168.');
+    url = isLocal ? `http://${url}` : `https://${url}`;
+  }
+  
+  // Strip trailing slashes
+  return url.replace(/\/+$/, '');
+};
+
+const BASE_URL = getBaseUrl();
 
 const getToken = () => localStorage.getItem('auth_token');
 
